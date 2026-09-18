@@ -1,1 +1,54 @@
-<p>assessment-detail works!</p>
+<main class="container">
+  <a routerLink="/assessments">← Volver</a>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (assessment(); as a) {
+  <div class="row head">
+    <div>
+      <h1>{{ a.name }}</h1>
+      <p class="muted">{{ a.description }}</p>
+    </div>
+    <span class="spacer"></span>
+    <div class="card stat"><small class="muted">Tiempo restante</small><strong [class.error]="finished()">{{ clock()
+        }}</strong></div>
+    <div class="card stat"><small class="muted">Puntaje acumulado</small><strong>{{ results()?.totalScore ?? 0 }} / {{
+        maxScore() }}</strong></div>
+    <div class="card stat"><small class="muted">Estado</small>
+      <span class="badge" [class.ok]="status() === 'Finalizado'" [class.warn]="status() === 'En curso'">{{ status()
+        }}</span>
+    </div>
+  </div>
+
+  <div class="row actions">
+    @if (!started()) {
+    <button class="btn primary" (click)="start()">▶ Iniciar assessment</button>
+    } @else if (!finished()) {
+    <button class="btn danger" (click)="finish()">Finalizar y ver resultados</button>
+    } @else {
+    <a class="btn primary" [routerLink]="['/assessments', id(), 'results']">📊 Ver resultados</a>
+    }
+  </div>
+
+  <h2>Preguntas ({{ a.questions?.length ?? 0 }})</h2>
+  <div class="questions">
+    @for (q of a.questions; track q.id; let i = $index) {
+    <div class="card row">
+      <strong>{{ i + 1 }}.</strong>
+      <div>
+        <div>{{ q.title }}</div>
+        <small class="muted">{{ q.points }} pts</small>
+      </div>
+      <span class="spacer"></span>
+      @if (scoreOf(q.id) !== null) { <span class="badge ok">Enviada · {{ scoreOf(q.id) }} pts</span> }
+      @else { <span class="badge">Sin responder</span> }
+      @if (started() && !finished()) {
+      <a class="btn primary" [routerLink]="['questions', q.id]">Resolver</a>
+      } @else {
+      <button class="btn" disabled>Resolver</button>
+      }
+    </div>
+    }
+  </div>
+  } @else if (!error()) {
+  <p class="muted">Cargando…</p>
+  }
+</main>

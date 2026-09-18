@@ -1,1 +1,29 @@
-<p>assessments-list works!</p>
+<main class="container">
+  <h1>Assessments</h1>
+  <p class="muted">Selecciona una prueba técnica para comenzar.</p>
+
+  @if (assessments(); as list) {
+  @if (failed) {
+  <p class="error">No se pudo conectar con el backend. Verifica que esté corriendo en el puerto 3000.</p>
+  } @else if (!list.length) {
+  <p class="muted">No hay assessments disponibles.</p>
+  }
+  <div class="grid">
+    @for (a of list; track a.id) {
+    <a class="card item" [routerLink]="['/assessments', a.id]">
+      <h3>{{ a.name }}</h3>
+      <p class="muted">{{ a.description }}</p>
+      <div class="row">
+        <span class="badge">⏱ {{ a.durationMinutes }} min</span>
+        @if (a.questions) { <span class="badge">{{ a.questions.length }} preguntas</span> }
+        <span class="spacer"></span>
+        <span class="badge" [class.ok]="status(a) === 'Finalizado'" [class.warn]="status(a) === 'En curso'">{{ status(a)
+          }}</span>
+      </div>
+    </a>
+    }
+  </div>
+  } @else {
+  <p class="muted">Cargando…</p>
+  }
+</main>

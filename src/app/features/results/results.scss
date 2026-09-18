@@ -1,0 +1,26 @@
+.stats {
+    margin: 1rem 0 1.5rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+
+    strong {
+        font-size: 1.75rem;
+    }
+
+    .ok {
+        color: var(--ok);
+    }
+
+    .error {
+        color: var(--bad);
+    }
+}
+
+.list {
+    display: grid;
+    gap: .75rem;
+}

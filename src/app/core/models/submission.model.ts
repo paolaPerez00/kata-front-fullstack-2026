@@ -1,11 +1,11 @@
 import { Language } from './question.model';
 
 export interface TestCaseResult {
+    testCaseId: string;
     passed: boolean;
-    input?: string;
-    expectedOutput?: string;
-    actualOutput?: string;
-    isHidden?: boolean;
+    actualOutput: string;
+    expectedOutput: string;
+    errorMessage?: string;
 }
 
 export interface Submission {
@@ -16,7 +16,8 @@ export interface Submission {
     language: Language;
     results: TestCaseResult[];
     score: number;
-    createdAt?: string;
+    status: 'pending' | 'graded' | 'error';
+    submittedAt: string;
 }
 
 export interface CreateSubmissionDto {

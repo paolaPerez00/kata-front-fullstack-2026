@@ -1,1 +1,34 @@
-<p>results works!</p>
+<main class="container">
+  <a [routerLink]="['/assessments', id()]">← Assessment</a>
+  <h1>Resultados{{ assessment() ? ' · ' + assessment()!.name : '' }}</h1>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (results(); as r) {
+  <div class="grid stats">
+    <div class="card stat"><small class="muted">Puntaje obtenido</small><strong>{{ r.totalScore }} / {{ maxScore()
+        }}</strong><span class="badge" [class.ok]="percent() >= 60" [class.bad]="percent() < 60">{{ percent() }}%</span>
+    </div>
+    <div class="card stat"><small class="muted">Preguntas correctas</small><strong class="ok">{{ correct() }}</strong>
+    </div>
+    <div class="card stat"><small class="muted">Preguntas incorrectas</small><strong class="error">{{ incorrect()
+        }}</strong></div>
+    <div class="card stat"><small class="muted">Tiempo consumido</small><strong>{{ elapsed() }}</strong></div>
+  </div>
+
+  <h2>Detalle por pregunta</h2>
+  <div class="list">
+    @for (row of rows(); track row.q.id) {
+    <div class="card row">
+      <div>
+        <div>{{ row.q.title }}</div>
+        <small class="muted">{{ row.last ? row.passed + ' / ' + row.total + ' casos' : 'Sin responder' }}</small>
+      </div>
+      <span class="spacer"></span>
+      <span>{{ row.last?.score ?? 0 }} / {{ row.q.points }} pts</span>
+      <span class="badge" [class.ok]="row.ok" [class.bad]="!row.ok">{{ row.ok ? 'Correcta' : 'Incorrecta' }}</span>
+    </div>
+    }
+  </div>
+  } @else if (!error()) {
+  <p class="muted">Cargando…</p>
+  }
+</main>

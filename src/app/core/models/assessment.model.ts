@@ -17,9 +17,12 @@ export interface CreateAssessmentDto {
 }
 
 export interface AssessmentResults {
+    assessmentId: string;
     totalScore: number;
-    maxScore: number;
-    correct: number;
-    incorrect: number;
+    totalQuestions: number;
+    correctAnswers: number;
+    incorrectAnswers: number;
+    testCasesSummary: { totalCases: number; passedCases: number; failedCases: number; percentage: number };
+    /** Última submission de cada pregunta. */
     submissions: Submission[];
 }
