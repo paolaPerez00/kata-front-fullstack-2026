@@ -43,8 +43,13 @@ export class CodeEditor {
   protected submission = signal<Submission | null>(null);
   protected error = signal('');
   private durationMinutes = signal(0);
+  /** Ids de las preguntas del assessment, en el mismo orden que se muestran en el detalle. */
+  private questionOrder = signal<string[]>([]);
+  /** Código sin enviar por lenguaje, para no perderlo al cambiar de lenguaje en la misma pregunta. */
   private drafts = new Map<Language, string>();
+  /** Input con el que se ejecutó por última vez (puede diferir del textarea si el candidato lo edita después de "Ejecutar"). */
   private lastRunInput = '';
+  /** Evita reenviar por segunda vez cuando el tiempo se agota (el efecto de abajo corre en cada tick del reloj). */
   private autoSubmitted = false;
 
   protected remaining = computed(() => {
@@ -59,6 +64,15 @@ export class CodeEditor {
   });
   protected expired = computed(() => this.remaining() === 0);
   protected busy = computed(() => this.running() || this.submitting());
+
+  /** Posición (1-based) de la pregunta actual dentro del assessment, y el total, para "Pregunta 2 de 5". */
+  protected position = computed(() => {
+    const order = this.questionOrder();
+    const index = order.indexOf(this.questionId());
+    return { current: index + 1, total: order.length };
+  });
+  protected previousQuestionId = computed(() => this.siblingQuestionId(-1));
+  protected nextQuestionId = computed(() => this.siblingQuestionId(1));
 
   /** Compara la última ejecución con el ejemplo visible cuyo input coincide, para no confundir "compiló" con "es correcta". */
   protected verdict = computed(() => {
@@ -80,6 +94,7 @@ export class CodeEditor {
     effect(() => {
       if (!this.expired()) return;
       this.attempts.finish(this.assessmentId(), this.durationMinutes());
+      // Se acabó el tiempo: registra lo que había en el editor, aunque no se haya pulsado "Enviar respuesta".
       if (!this.autoSubmitted && !this.submission() && !this.submitting()) {
         this.autoSubmitted = true;
         this.submit();
@@ -101,8 +116,18 @@ export class CodeEditor {
       });
     });
     effect(() => {
-      this.assessmentsApi.get(this.assessmentId()).subscribe(a => this.durationMinutes.set(a.durationMinutes));
+      this.assessmentsApi.get(this.assessmentId()).subscribe(a => {
+        this.durationMinutes.set(a.durationMinutes);
+        this.questionOrder.set((a.questions ?? []).map(q => q.id));
+      });
     });
+  }
+
+  private siblingQuestionId(offset: number): string | null {
+    const order = this.questionOrder();
+    const index = order.indexOf(this.questionId());
+    if (index === -1) return null;
+    return order[index + offset] ?? null;
   }
 
   /** Cambia de lenguaje conservando el borrador del actual (si `keepDraft` es true) y recupera o genera el del nuevo. */
@@ -110,6 +135,10 @@ export class CodeEditor {
     if (keepDraft) this.drafts.set(this.language(), this.code());
     this.language.set(lang);
     this.code.set(this.drafts.get(lang) ?? buildTemplate(lang, this.stdin()));
+  }
+
+  protected goToQuestion(id: string) {
+    this.router.navigate(['/assessments', this.assessmentId(), 'questions', id]);
   }
 
   protected goToResults() {
