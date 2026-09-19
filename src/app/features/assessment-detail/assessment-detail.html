@@ -10,7 +10,8 @@
     <span class="spacer"></span>
     <div class="card stat"><small class="muted">Tiempo restante</small><strong [class.error]="finished()">{{ clock()
         }}</strong></div>
-    <div class="card stat"><small class="muted">Puntaje acumulado</small><strong>{{ results()?.totalScore ?? 0 }} / {{
+    <div class="card stat"><small class="muted">Puntaje acumulado</small><strong>{{ results()?.totalScore ?? 0 | number:
+        '1.0-2' }} / {{
         maxScore() }}</strong></div>
     <div class="card stat"><small class="muted">Estado</small>
       <span class="badge" [class.ok]="status() === 'Finalizado'" [class.warn]="status() === 'En curso'">{{ status()
@@ -19,7 +20,8 @@
   </div>
 
   @if (started() && !finished()) {
-    <div class="banner warn">⚠ Intento en curso: el tiempo sigue corriendo aunque salgas de esta página o cierres el navegador. No hay reintentos.</div>
+  <div class="banner warn">⚠ Intento en curso: el tiempo sigue corriendo aunque salgas de esta página o cierres el
+    navegador. No hay reintentos.</div>
   }
 
   <div class="row actions">
@@ -28,7 +30,7 @@
     } @else if (!finished()) {
     <button class="btn danger" (click)="finish()">Finalizar y ver resultados</button>
     } @else {
-    <a class="btn primary" [routerLink]="['/assessments', id(), 'results']">📊 Ver resultados</a>
+    <a class="btn primary" [routerLink]="['/assessments', id(), 'results']">Ver resultados</a>
     }
   </div>
 
@@ -42,7 +44,7 @@
         <small class="muted">{{ q.points }} pts</small>
       </div>
       <span class="spacer"></span>
-      @if (scoreOf(q.id) !== null) { <span class="badge ok">Enviada · {{ scoreOf(q.id) }} pts</span> }
+      @if (scoreOf(q.id) !== null) { <span class="badge ok">Enviada · {{ scoreOf(q.id) | number: '1.0-2' }} pts</span> }
       @else { <span class="badge">Sin responder</span> }
       @if (started() && !finished()) {
       <a class="btn primary" [routerLink]="['questions', q.id]">Resolver</a>
@@ -58,7 +60,7 @@
 </main>
 
 @if (confirmingStart() && assessment(); as a) {
-<app-modal title="¿Iniciar assessment?" icon="⚠️">
+<app-modal title="¿Iniciar assessment?">
   <p>Estás por iniciar <strong>{{ a.name }}</strong>. Antes de comenzar, ten en cuenta:</p>
   <ul>
     <li>Tienes <strong>{{ a.durationMinutes }} minutos</strong> para completarlo.</li>
@@ -73,7 +75,7 @@
 }
 
 @if (timeUp()) {
-<app-modal title="Se terminó el tiempo" icon="⏰">
+<app-modal title="Se terminó el tiempo">
   <p>El tiempo del assessment ha finalizado. Las respuestas que enviaste ya quedaron calificadas.</p>
   <ng-container actions>
     <button class="btn primary" (click)="goToResults()">Ver mis resultados</button>

@@ -4,7 +4,7 @@
   @if (error()) { <p class="error">{{ error() }}</p> }
   @if (results(); as r) {
   <div class="grid stats">
-    <div class="card stat"><small class="muted">Puntaje obtenido</small><strong>{{ r.totalScore }} / {{ maxScore()
+    <div class="card stat"><small class="muted">Puntaje obtenido</small><strong>{{ r.totalScore | number: '1.0-2' }} / {{ maxScore()
         }}</strong><span class="badge" [class.ok]="percent() >= 60" [class.bad]="percent() < 60">{{ percent() }}%</span>
     </div>
     <div class="card stat"><small class="muted">Preguntas correctas</small><strong class="ok">{{ correct() }}</strong>
@@ -23,7 +23,7 @@
         <small class="muted">{{ row.last ? row.passed + ' / ' + row.total + ' casos' : 'Sin responder' }}</small>
       </div>
       <span class="spacer"></span>
-      <span>{{ row.last?.score ?? 0 }} / {{ row.q.points }} pts</span>
+      <span>{{ row.last?.score ?? 0 | number: '1.0-2' }} / {{ row.q.points }} pts</span>
       <span class="badge" [class.ok]="row.ok" [class.bad]="!row.ok">{{ row.ok ? 'Correcta' : 'Incorrecta' }}</span>
     </div>
     }

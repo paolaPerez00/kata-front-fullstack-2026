@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 
 /**
  * Medidas disuasivas durante la prueba:
- *  - Bloquea copiar, cortar y pegar (teclado, menú contextual y arrastrar/soltar), también dentro de Monaco.
+ *  - Bloquea copiar, cortar y pegar (teclado, menú contextual y arrastrar/soltar), excepto dentro del editor Monaco.
  *  - Oculta el contenido si la ventana pierde el foco o se cambia de pestaña.
  */
 @Component({
@@ -40,14 +40,18 @@ export class ExamGuard {
       ['dragstart', 'Arrastrar contenido no está permitido'],
       ['drop', 'Soltar contenido no está permitido'],
     ];
-    const block = (message: string) => (e: Event) => { e.preventDefault(); e.stopPropagation(); this.warn(message); };
+    const inEditor = (e: Event) => !!(e.target as Element | null)?.closest?.('.monaco-editor');
+    const block = (message: string) => (e: Event) => {
+      if (inEditor(e)) return;
+      e.preventDefault(); e.stopPropagation(); this.warn(message);
+    };
     const listeners = blockedEvents.map(([type, msg]) => [type, block(msg)] as const);
     for (const [type, fn] of listeners) document.addEventListener(type, fn, true);
 
     const onKeyDown = (e: KeyboardEvent) => {
       const clipboardShortcut = (e.ctrlKey || e.metaKey) && ['c', 'x', 'v'].includes(e.key.toLowerCase());
       const insertShortcut = e.key === 'Insert' && (e.ctrlKey || e.shiftKey);
-      if (clipboardShortcut || insertShortcut) {
+      if ((clipboardShortcut || insertShortcut) && !inEditor(e)) {
         e.preventDefault(); e.stopPropagation();
         this.warn('Copiar y pegar no están permitidos durante la prueba');
       }

@@ -38,7 +38,7 @@
           : 'Enviar respuesta' }}</button>
       </div>
 
-      <div class="editor"><app-monaco-editor [(value)]="code" [language]="language()" [restricted]="true" /></div>
+      <div class="editor"><app-monaco-editor [(value)]="code" [language]="language()" /></div>
 
       <label class="muted" for="stdin">Input (stdin) para ejecución de prueba</label>
       <textarea id="stdin" rows="2" [ngModel]="stdin()" (ngModelChange)="stdin.set($event)"></textarea>
@@ -74,7 +74,7 @@
         <hr />
         <p><strong>{{ s.results.length }} casos ejecutados · {{ passed() }} exitosos · {{ s.results.length - passed() }}
             fallidos</strong></p>
-        <p>Puntaje: <strong>{{ s.score }} / {{ q.points }}</strong></p>
+        <p>Puntaje: <strong>{{ s.score | number: '1.0-2' }} / {{ q.points }}</strong></p>
         @for (r of s.results; track $index) {
         <div class="case" [class.pass]="r.passed">
           {{ r.passed ? '✔' : '✖' }} Caso {{ $index + 1 }}
@@ -99,7 +99,7 @@ obtenido: {{ r.actualOutput }}</pre>
 </main>
 
 @if (expired()) {
-<app-modal title="Se terminó el tiempo" icon="⏰">
+<app-modal title="Se terminó el tiempo">
   <p>El tiempo del assessment ha finalizado y ya no se pueden enviar más respuestas. Lo que enviaste antes quedó
     calificado.</p>
   <ng-container actions>

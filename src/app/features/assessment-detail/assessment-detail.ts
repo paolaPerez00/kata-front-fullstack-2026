@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AssessmentsService } from '../../core/services/assessments.service';
@@ -8,7 +9,7 @@ import { Modal } from '../../shared/modal';
 
 @Component({
   selector: 'app-assessment-detail',
-  imports: [RouterLink, Modal],
+  imports: [DecimalPipe, RouterLink, Modal],
   templateUrl: './assessment-detail.html',
   styleUrl: './assessment-detail.scss',
 })

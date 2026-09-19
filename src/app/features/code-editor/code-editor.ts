@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -16,7 +17,7 @@ import { LANGUAGE_LABELS, buildTemplate, formatClock } from '../../shared/format
 
 @Component({
   selector: 'app-code-editor',
-  imports: [FormsModule, RouterLink, MonacoEditor, Modal, ExamGuard],
+  imports: [DecimalPipe, FormsModule, RouterLink, MonacoEditor, Modal, ExamGuard],
   templateUrl: './code-editor.html',
   styleUrl: './code-editor.scss',
 })

@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -8,7 +9,7 @@ import { formatClock } from '../../shared/format';
 
 @Component({
   selector: 'app-results',
-  imports: [RouterLink],
+  imports: [DecimalPipe, RouterLink],
   templateUrl: './results.html',
   styleUrl: './results.scss',
 })
