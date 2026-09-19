@@ -44,29 +44,37 @@ export class CodeEditor {
   protected error = signal('');
   private durationMinutes = signal(0);
   private drafts = new Map<Language, string>();
+  private lastRunInput = '';
+  private autoSubmitted = false;
 
   protected remaining = computed(() => {
-    const d = this.durationMinutes();
-    return d ? this.attempts.remainingMs(this.attempts.get(this.assessmentId()), d, this.attempts.now()) : null;
+    const durationMinutes = this.durationMinutes();
+    return durationMinutes
+      ? this.attempts.remainingMs(this.attempts.get(this.assessmentId()), durationMinutes, this.attempts.now())
+      : null;
   });
-  protected clock = computed(() => (this.remaining() === null ? '--:--' : formatClock(this.remaining()!)));
+  protected clock = computed(() => {
+    const remainingMs = this.remaining();
+    return remainingMs === null ? '--:--' : formatClock(remainingMs);
+  });
   protected expired = computed(() => this.remaining() === 0);
   protected busy = computed(() => this.running() || this.submitting());
 
+  /** Compara la última ejecución con el ejemplo visible cuyo input coincide, para no confundir "compiló" con "es correcta". */
   protected verdict = computed(() => {
-    const r = this.runResult();
-    if (!r || !r.compilation.success || r.timedOut || r.exitCode !== 0) return null;
-    const sample = this.question()?.testCases?.find(t => t.input.trim() === this.ranInput.trim());
-    if (!sample) return { kind: 'unknown' as const };
-    const ok = r.stdout.trim() === sample.expectedOutput.trim();
-    return { kind: ok ? ('ok' as const) : ('fail' as const), expected: sample.expectedOutput.trim() };
-  });
-  private ranInput = '';
-  private visibleIds = computed(() => new Set((this.question()?.testCases ?? []).map(t => t.id)));
-  protected isVisible(testCaseId: string) { return this.visibleIds().has(testCaseId); }
-  protected passed = computed(() => this.submission()?.results.filter(r => r.passed).length ?? 0);
+    const runResult = this.runResult();
+    if (!runResult || !runResult.compilation.success || runResult.timedOut || runResult.exitCode !== 0) return null;
 
-  private autoSubmitted = false;
+    const sample = this.question()?.testCases?.find(t => t.input.trim() === this.lastRunInput.trim());
+    if (!sample) return { kind: 'unknown' as const };
+
+    const matchesExpected = runResult.stdout.trim() === sample.expectedOutput.trim();
+    return { kind: matchesExpected ? ('ok' as const) : ('fail' as const), expected: sample.expectedOutput.trim() };
+  });
+
+  private visibleTestCaseIds = computed(() => new Set((this.question()?.testCases ?? []).map(t => t.id)));
+  protected isVisible(testCaseId: string) { return this.visibleTestCaseIds().has(testCaseId); }
+  protected passed = computed(() => this.submission()?.results.filter(r => r.passed).length ?? 0);
 
   constructor() {
     effect(() => {
@@ -84,10 +92,10 @@ export class CodeEditor {
       this.submission.set(null);
       this.autoSubmitted = false;
       this.questionsApi.get(id).subscribe({
-        next: q => {
-          this.question.set(q);
-          this.stdin.set(q.testCases?.find(t => !t.isHidden)?.input ?? '');
-          this.selectLanguage(q.allowedLanguages[0] ?? 'javascript', false);
+        next: question => {
+          this.question.set(question);
+          this.stdin.set(question.testCases?.find(t => !t.isHidden)?.input ?? '');
+          this.selectLanguage(question.allowedLanguages[0] ?? 'javascript', false);
         },
         error: () => this.error.set('No se pudo cargar la pregunta.'),
       });
@@ -97,8 +105,9 @@ export class CodeEditor {
     });
   }
 
-  protected selectLanguage(lang: Language, saveCurrent = true) {
-    if (saveCurrent) this.drafts.set(this.language(), this.code());
+  /** Cambia de lenguaje conservando el borrador del actual (si `keepDraft` es true) y recupera o genera el del nuevo. */
+  protected selectLanguage(lang: Language, keepDraft = true) {
+    if (keepDraft) this.drafts.set(this.language(), this.code());
     this.language.set(lang);
     this.code.set(this.drafts.get(lang) ?? buildTemplate(lang, this.stdin()));
   }
@@ -110,9 +119,9 @@ export class CodeEditor {
   protected run() {
     this.running.set(true);
     this.runResult.set(null);
-    this.ranInput = this.stdin();
+    this.lastRunInput = this.stdin();
     this.executionApi.run({ code: this.code(), language: this.language(), input: this.stdin() }).subscribe({
-      next: r => { this.runResult.set(r); this.running.set(false); },
+      next: result => { this.runResult.set(result); this.running.set(false); },
       error: e => { this.error.set(e?.error?.message ?? 'Error al ejecutar el código.'); this.running.set(false); },
     });
   }
@@ -123,7 +132,7 @@ export class CodeEditor {
     this.submissionsApi.submit({
       assessmentId: this.assessmentId(), questionId: this.questionId(), code: this.code(), language: this.language(),
     }).subscribe({
-      next: s => { this.submission.set(s); this.submitting.set(false); },
+      next: saved => { this.submission.set(saved); this.submitting.set(false); },
       error: e => { this.error.set(e?.error?.message ?? 'Error al enviar la respuesta.'); this.submitting.set(false); },
     });
   }

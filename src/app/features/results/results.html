@@ -17,14 +17,14 @@
 
   <h2>Detalle por pregunta</h2>
   <div class="list">
-    @for (row of rows(); track row.q.id) {
+    @for (row of rows(); track row.question.id) {
     <div class="card row">
       <div>
-        <div>{{ row.q.title }}</div>
-        <small class="muted">{{ row.last ? row.passed + ' / ' + row.total + ' casos' : 'Sin responder' }}</small>
+        <div>{{ row.question.title }}</div>
+        <small class="muted">{{ row.submission ? row.passed + ' / ' + row.total + ' casos' : 'Sin responder' }}</small>
       </div>
       <span class="spacer"></span>
-      <span>{{ row.last?.score ?? 0 | number: '1.0-2' }} / {{ row.q.points }} pts</span>
+      <span>{{ row.submission?.score ?? 0 | number: '1.0-2' }} / {{ row.question.points }} pts</span>
       <span class="badge" [class.ok]="row.ok" [class.bad]="!row.ok">{{ row.ok ? 'Correcta' : 'Incorrecta' }}</span>
     </div>
     }

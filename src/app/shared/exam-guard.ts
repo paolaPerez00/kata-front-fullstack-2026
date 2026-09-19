@@ -1,18 +1,18 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 
 /**
- * Medidas disuasivas durante la prueba:
+ * Medidas restrictivas durante la prueba:
  *  - Bloquea copiar, cortar y pegar (teclado, menú contextual y arrastrar/soltar), excepto dentro del editor Monaco.
  *  - Oculta el contenido si la ventana pierde el foco o se cambia de pestaña.
  */
 @Component({
   selector: 'app-exam-guard',
   template: `
-    @if (toast()) { <div class="toast" role="alert">🚫 {{ toast() }}</div> }
+    @if (toast()) { <div class="toast" role="alert">{{ toast() }}</div> }
     @if (hidden()) {
       <div class="cover" role="alertdialog">
         <div>
-          <h2>🔒 Contenido oculto</h2>
+          <h2>Contenido oculto</h2>
           <p>Por seguridad, la prueba se oculta cuando sales de la ventana.</p>
           <p class="muted">Vuelve a esta ventana para continuar. El tiempo sigue corriendo.</p>
         </div>

@@ -30,20 +30,24 @@ export class Results {
     const max = this.maxScore();
     return max ? Math.round(((this.results()?.totalScore ?? 0) / max) * 100) : 0;
   });
-  protected correct = computed(() => this.rows().filter(r => r.ok).length);
+  protected correct = computed(() => this.rows().filter(row => row.ok).length);
   protected incorrect = computed(() => this.rows().length - this.correct());
   protected elapsed = computed(() => {
-    const at = this.attempts.get(this.id()), a = this.assessment();
-    return at && a ? formatClock(this.attempts.elapsedMs(at, a.durationMinutes)) : '—';
+    const attempt = this.attempts.get(this.id());
+    const assessment = this.assessment();
+    return attempt && assessment ? formatClock(this.attempts.elapsedMs(attempt, assessment.durationMinutes)) : '—';
   });
+
   protected rows = computed(() => {
-    const a = this.assessment(), r = this.results();
-    if (!a || !r) return [];
-    return (a.questions ?? []).map(q => {
-      const subs = r.submissions.filter(s => s.questionId === q.id);
-      const last = subs.at(-1);
-      const passed = last?.results.filter(t => t.passed).length ?? 0;
-      return { q, last, passed, total: last?.results.length ?? 0, ok: !!last && passed === last.results.length };
+    const assessment = this.assessment();
+    const results = this.results();
+    if (!assessment || !results) return [];
+
+    return (assessment.questions ?? []).map(question => {
+      const submission = results.submissions.find(s => s.questionId === question.id);
+      const passed = submission?.results.filter(t => t.passed).length ?? 0;
+      const total = submission?.results.length ?? 0;
+      return { question, submission, passed, total, ok: !!submission && passed === total };
     });
   });
 
@@ -51,10 +55,10 @@ export class Results {
     effect(() => {
       const id = this.id();
       forkJoin([this.api.get(id), this.api.results(id)]).subscribe({
-        next: ([a, r]) => {
-          this.assessment.set(a);
-          this.results.set(r);
-          this.fillUnansweredIfFinished(id, a, r);
+        next: ([assessment, results]) => {
+          this.assessment.set(assessment);
+          this.results.set(results);
+          this.fillUnansweredIfFinished(id, assessment, results);
         },
         error: () => this.error.set('No se pudieron cargar los resultados.'),
       });
@@ -64,12 +68,12 @@ export class Results {
   private fillUnansweredIfFinished(assessmentId: string, assessment: Assessment, results: AssessmentResults) {
     const finished = !!this.attempts.get(assessmentId)?.finishedAt;
     const questions = assessment.questions ?? [];
-    const answered = new Set(results.submissions.map(s => s.questionId));
-    if (!finished || answered.size >= questions.length) return;
+    const answeredQuestionIds = new Set(results.submissions.map(s => s.questionId));
+    if (!finished || answeredQuestionIds.size >= questions.length) return;
 
     this.grading.set(true);
     this.autoGrade
-      .submitUnanswered(assessmentId, questions, answered)
+      .submitUnanswered(assessmentId, questions, answeredQuestionIds)
       .pipe(switchMap(() => this.api.results(assessmentId)))
       .subscribe({
         next: r => { this.results.set(r); this.grading.set(false); },

@@ -1,12 +1,11 @@
 import { Component, input } from '@angular/core';
 
-/** Modal simple con contenido proyectado. El contenido va en <ng-content>, los botones en [actions]. */
 @Component({
   selector: 'app-modal',
   template: `
     <div class="backdrop">
       <div class="dialog" role="dialog" aria-modal="true" [attr.aria-label]="title()">
-        <h2>{{ icon() }} {{ title() }}</h2>
+        <h2> {{ title() }}</h2>
         <div class="body"><ng-content /></div>
         <div class="actions"><ng-content select="[actions]" /></div>
       </div>
@@ -21,5 +20,4 @@ import { Component, input } from '@angular/core';
 })
 export class Modal {
   readonly title = input.required<string>();
-  readonly icon = input('');
 }

@@ -10,7 +10,6 @@ export class MonacoEditor implements OnDestroy {
   readonly value = model('');
   readonly language = input('javascript');
   readonly readOnly = input(false);
-  /** Deshabilita menú contextual y arrastrar/soltar dentro del editor. */
   readonly restricted = input(false);
 
   private host = viewChild.required<ElementRef<HTMLElement>>('host');

@@ -29,13 +29,13 @@ export class AssessmentDetail {
   private attempt = signal<Attempt | null>(null);
 
   protected remaining = computed(() => {
-    const a = this.assessment();
-    if (!a) return null;
-    return this.attempts.remainingMs(this.attempt(), a.durationMinutes, this.attempts.now());
+    const assessment = this.assessment();
+    if (!assessment) return null;
+    return this.attempts.remainingMs(this.attempt(), assessment.durationMinutes, this.attempts.now());
   });
   protected clock = computed(() => {
-    const r = this.remaining();
-    return r === null ? `${this.assessment()?.durationMinutes ?? 0}:00` : formatClock(r);
+    const remainingMs = this.remaining();
+    return remainingMs === null ? `${this.assessment()?.durationMinutes ?? 0}:00` : formatClock(remainingMs);
   });
   protected maxScore = computed(() => (this.assessment()?.questions ?? []).reduce((sum, q) => sum + q.points, 0));
   protected started = computed(() => this.attempt() !== null);
@@ -44,11 +44,12 @@ export class AssessmentDetail {
 
   constructor() {
     effect(() => {
-      const a = this.assessment();
-      if (a && this.attempt() && !this.attempt()!.finishedAt && this.remaining() === 0) {
-        this.attempt.set(this.attempts.finish(this.id(), a.durationMinutes));
+      const assessment = this.assessment();
+      const attempt = this.attempt();
+      if (assessment && attempt && !attempt.finishedAt && this.remaining() === 0) {
+        this.attempt.set(this.attempts.finish(this.id(), assessment.durationMinutes));
         this.timeUp.set(true);
-        this.fillUnanswered(a);
+        this.fillUnanswered(assessment); // se acabó el tiempo: registra en blanco lo que no se alcanzó a responder
       }
     });
     effect(() => {
@@ -60,15 +61,15 @@ export class AssessmentDetail {
   }
 
   private fillUnanswered(assessment: Assessment) {
-    const answered = new Set((this.results()?.submissions ?? []).map(s => s.questionId));
-    this.autoGrade.submitUnanswered(this.id(), assessment.questions ?? [], answered).subscribe({
+    const answeredQuestionIds = new Set((this.results()?.submissions ?? []).map(s => s.questionId));
+    this.autoGrade.submitUnanswered(this.id(), assessment.questions ?? [], answeredQuestionIds).subscribe({
       next: () => this.api.results(this.id()).subscribe(r => this.results.set(r)),
     });
   }
 
   protected scoreOf(questionId: string): number | null {
-    const subs = this.results()?.submissions.filter(s => s.questionId === questionId) ?? [];
-    return subs.length ? Math.max(...subs.map(s => s.score)) : null;
+    const submission = this.results()?.submissions.find(s => s.questionId === questionId);
+    return submission?.score ?? null;
   }
 
   protected start() {
@@ -82,8 +83,8 @@ export class AssessmentDetail {
 
   protected finish() {
     this.attempts.finish(this.id(), this.assessment()?.durationMinutes ?? 0);
-    const a = this.assessment();
-    if (a) this.fillUnanswered(a);
+    const assessment = this.assessment();
+    if (assessment) this.fillUnanswered(assessment);
     this.router.navigate(['/assessments', this.id(), 'results']);
   }
 }
