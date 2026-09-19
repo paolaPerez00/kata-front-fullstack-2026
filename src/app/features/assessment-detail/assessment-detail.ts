@@ -4,10 +4,11 @@ import { AssessmentsService } from '../../core/services/assessments.service';
 import { Attempt, AttemptService } from '../../core/services/attempt.service';
 import { Assessment, AssessmentResults } from '../../core/models/assessment.model';
 import { formatClock } from '../../shared/format';
+import { Modal } from '../../shared/modal';
 
 @Component({
   selector: 'app-assessment-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, Modal],
   templateUrl: './assessment-detail.html',
   styleUrl: './assessment-detail.scss',
 })
@@ -20,6 +21,8 @@ export class AssessmentDetail {
   protected assessment = signal<Assessment | null>(null);
   protected results = signal<AssessmentResults | null>(null);
   protected error = signal('');
+  protected confirmingStart = signal(false);
+  protected timeUp = signal(false);
   private attempt = signal<Attempt | null>(null);
 
   protected remaining = computed(() => {
@@ -41,7 +44,7 @@ export class AssessmentDetail {
       const a = this.assessment();
       if (a && this.attempt() && !this.attempt()!.finishedAt && this.remaining() === 0) {
         this.attempt.set(this.attempts.finish(this.id(), a.durationMinutes));
-        this.router.navigate(['/assessments', this.id(), 'results']);
+        this.timeUp.set(true);
       }
     });
     effect(() => {
@@ -58,7 +61,12 @@ export class AssessmentDetail {
   }
 
   protected start() {
+    this.confirmingStart.set(false);
     this.attempt.set(this.attempts.start(this.id()));
+  }
+
+  protected goToResults() {
+    this.router.navigate(['/assessments', this.id(), 'results']);
   }
 
   protected finish() {

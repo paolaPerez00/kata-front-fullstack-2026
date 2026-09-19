@@ -18,9 +18,13 @@
     </div>
   </div>
 
+  @if (started() && !finished()) {
+    <div class="banner warn">⚠ Intento en curso: el tiempo sigue corriendo aunque salgas de esta página o cierres el navegador. No hay reintentos.</div>
+  }
+
   <div class="row actions">
     @if (!started()) {
-    <button class="btn primary" (click)="start()">▶ Iniciar assessment</button>
+    <button class="btn primary" (click)="confirmingStart.set(true)">▶ Iniciar assessment</button>
     } @else if (!finished()) {
     <button class="btn danger" (click)="finish()">Finalizar y ver resultados</button>
     } @else {
@@ -52,3 +56,27 @@
   <p class="muted">Cargando…</p>
   }
 </main>
+
+@if (confirmingStart() && assessment(); as a) {
+<app-modal title="¿Iniciar assessment?" icon="⚠️">
+  <p>Estás por iniciar <strong>{{ a.name }}</strong>. Antes de comenzar, ten en cuenta:</p>
+  <ul>
+    <li>Tienes <strong>{{ a.durationMinutes }} minutos</strong> para completarlo.</li>
+    <li>El <strong>tiempo no se detiene</strong>, aunque cierres la página o el navegador.</li>
+    <li><strong>No hay reintentos</strong>: una vez iniciado, debes completarlo.</li>
+  </ul>
+  <ng-container actions>
+    <button class="btn" (click)="confirmingStart.set(false)">Cancelar</button>
+    <button class="btn primary" (click)="start()">Sí, iniciar ahora</button>
+  </ng-container>
+</app-modal>
+}
+
+@if (timeUp()) {
+<app-modal title="Se terminó el tiempo" icon="⏰">
+  <p>El tiempo del assessment ha finalizado. Las respuestas que enviaste ya quedaron calificadas.</p>
+  <ng-container actions>
+    <button class="btn primary" (click)="goToResults()">Ver mis resultados</button>
+  </ng-container>
+</app-modal>
+}

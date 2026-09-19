@@ -1,0 +1,88 @@
+.wrap {
+  padding: 1rem 1.5rem;
+}
+
+.bar {
+  margin-bottom: .5rem;
+}
+
+.layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.desc {
+  white-space: pre-wrap;
+}
+
+.sample {
+  margin-bottom: .75rem;
+
+  pre {
+    background: #f1f3f9;
+    padding: .4rem .6rem;
+    border-radius: 6px;
+  }
+}
+
+.work {
+  display: grid;
+  gap: .75rem;
+}
+
+.editor {
+  height: 380px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+textarea {
+  width: 100%;
+  font-family: monospace;
+}
+
+.console {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #0f172a;
+  min-height: 120px;
+
+  h3 {
+    color: #94a3b8;
+  }
+
+  .muted {
+    color: #94a3b8;
+  }
+
+  .ok {
+    color: #4ade80;
+  }
+
+  .error {
+    color: #f87171;
+  }
+
+  .warn {
+    color: #fbbf24;
+  }
+}
+
+.case {
+  padding: .25rem 0;
+  color: #f87171;
+
+  &.pass {
+    color: #4ade80;
+  }
+}
+
+hr {
+  border-color: #334155;
+}

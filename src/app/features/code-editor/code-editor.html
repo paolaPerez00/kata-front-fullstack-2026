@@ -1,1 +1,109 @@
-<p>code-editor works!</p>
+<app-exam-guard />
+<main class="wrap">
+  <div class="row bar">
+    <a [routerLink]="['/assessments', assessmentId()]">← Assessment</a>
+    <span class="spacer"></span>
+    <span class="badge" [class.bad]="expired()">⏱ {{ clock() }}</span>
+  </div>
+  @if (error()) { <p class="error">{{ error() }}</p> }
+
+  @if (question(); as q) {
+  <div class="layout">
+    <section class="card statement">
+      <h2>{{ q.title }}</h2>
+      <span class="badge">{{ q.points }} pts</span>
+      <p class="desc">{{ q.description }}</p>
+      @if (q.testCases?.length) {
+      <h3>Ejemplos</h3>
+      @for (t of q.testCases; track $index) {
+      <div class="sample">
+        <small class="muted">Input</small>
+        <pre>{{ t.input }}</pre>
+        <small class="muted">Output esperado</small>
+        <pre>{{ t.expectedOutput }}</pre>
+      </div>
+      }
+      }
+    </section>
+
+    <section class="work">
+      <div class="row">
+        <select [ngModel]="language()" (ngModelChange)="selectLanguage($event)" aria-label="Lenguaje">
+          @for (l of q.allowedLanguages; track l) { <option [value]="l">{{ labels[l] }}</option> }
+        </select>
+        <span class="spacer"></span>
+        <button class="btn" (click)="run()" [disabled]="busy() || expired()">{{ running() ? 'Ejecutando…' : '▶ Ejecutar'
+          }}</button>
+        <button class="btn primary" (click)="submit()" [disabled]="busy() || expired()">{{ submitting() ? 'Calificando…'
+          : 'Enviar respuesta' }}</button>
+      </div>
+
+      <div class="editor"><app-monaco-editor [(value)]="code" [language]="language()" [restricted]="true" /></div>
+
+      <label class="muted" for="stdin">Input (stdin) para ejecución de prueba</label>
+      <textarea id="stdin" rows="2" [ngModel]="stdin()" (ngModelChange)="stdin.set($event)"></textarea>
+
+      <div class="card console">
+        <h3>Consola</h3>
+        @if (running() || submitting()) { <p class="muted">Procesando…</p> }
+        @if (runResult(); as r) {
+        @if (r.compilation.success) { <p class="ok">✔ Compilación exitosa <small class="muted">(el código se ejecutó sin
+            errores)</small></p> }
+        @else {
+        <p class="error">✖ Error de compilación</p>
+        @if (r.compilation.line) { <p class="error">Línea {{ r.compilation.line }}:</p> }
+        @if (r.compilation.message) {
+        <pre class="error">{{ r.compilation.message }}</pre> }
+        }
+        @if (r.timedOut) { <p class="error">⏱ Tiempo de ejecución excedido</p> }
+        @if (r.stdout) { <small class="muted">Salida</small>
+        <pre>{{ r.stdout }}</pre> }
+        @if (r.stderr) { <small class="muted">stderr</small>
+        <pre class="error">{{ r.stderr }}</pre> }
+        <small class="muted">exit code {{ r.exitCode }}</small>
+        @if (verdict(); as v) {
+        @if (v.kind === 'ok') { <p class="ok">✔ La salida coincide con el resultado esperado</p> }
+        @else if (v.kind === 'fail') { <p class="error">✖ La salida NO coincide. Esperado: <strong>{{ v.expected
+            }}</strong></p> }
+        @else { <p class="warn">Con este input no se pueden verificar que todos los cases definidos en la prueba sean
+          correctos. Usa "Enviar respuesta" para
+          calificar con todos los casos.</p> }
+        }
+        }
+        @if (submission(); as s) {
+        <hr />
+        <p><strong>{{ s.results.length }} casos ejecutados · {{ passed() }} exitosos · {{ s.results.length - passed() }}
+            fallidos</strong></p>
+        <p>Puntaje: <strong>{{ s.score }} / {{ q.points }}</strong></p>
+        @for (r of s.results; track $index) {
+        <div class="case" [class.pass]="r.passed">
+          {{ r.passed ? '✔' : '✖' }} Caso {{ $index + 1 }}
+          @if (!isVisible(r.testCaseId)) { <small class="muted">(oculto)</small> }
+          @else if (!r.passed) {
+          <pre>esperado: {{ r.expectedOutput }}
+obtenido: {{ r.actualOutput }}</pre>
+          @if (r.errorMessage) {
+          <pre>{{ r.errorMessage }}</pre> }
+          }
+        </div>
+        }
+        }
+        @if (!runResult() && !submission() && !busy()) { <p class="muted">Ejecuta tu código para ver la salida aquí.</p>
+        }
+      </div>
+    </section>
+  </div>
+  } @else if (!error()) {
+  <p class="muted">Cargando…</p>
+  }
+</main>
+
+@if (expired()) {
+<app-modal title="Se terminó el tiempo" icon="⏰">
+  <p>El tiempo del assessment ha finalizado y ya no se pueden enviar más respuestas. Lo que enviaste antes quedó
+    calificado.</p>
+  <ng-container actions>
+    <button class="btn primary" (click)="goToResults()">Ver mis resultados</button>
+  </ng-container>
+</app-modal>
+}

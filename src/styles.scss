@@ -23,3 +23,7 @@ a { color: var(--brand); text-decoration: none; }
 .error { color: var(--bad); }
 select, input, textarea { font: inherit; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: 'JetBrains Mono', Menlo, monospace; font-size: .85rem; }
+
+/* Durante la prueba: sin selección de texto en el enunciado/consola. */
+body.exam-guarded { -webkit-user-select: none; user-select: none;
+  textarea, input, .monaco-editor { -webkit-user-select: text; user-select: text; } }
