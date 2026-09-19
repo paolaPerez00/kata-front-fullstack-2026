@@ -1,9 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { AssessmentsService } from '../../core/services/assessments.service';
 import { AttemptService } from '../../core/services/attempt.service';
+import { AutoGradeService } from '../../core/services/auto-grade.service';
 import { Assessment, AssessmentResults } from '../../core/models/assessment.model';
 import { formatClock } from '../../shared/format';
 
@@ -16,11 +17,13 @@ import { formatClock } from '../../shared/format';
 export class Results {
   private api = inject(AssessmentsService);
   private attempts = inject(AttemptService);
+  private autoGrade = inject(AutoGradeService);
 
   readonly id = input.required<string>();
   protected assessment = signal<Assessment | null>(null);
   protected results = signal<AssessmentResults | null>(null);
   protected error = signal('');
+  protected grading = signal(false);
 
   protected maxScore = computed(() => (this.assessment()?.questions ?? []).reduce((sum, q) => sum + q.points, 0));
   protected percent = computed(() => {
@@ -46,10 +49,31 @@ export class Results {
 
   constructor() {
     effect(() => {
-      forkJoin([this.api.get(this.id()), this.api.results(this.id())]).subscribe({
-        next: ([a, r]) => { this.assessment.set(a); this.results.set(r); },
+      const id = this.id();
+      forkJoin([this.api.get(id), this.api.results(id)]).subscribe({
+        next: ([a, r]) => {
+          this.assessment.set(a);
+          this.results.set(r);
+          this.fillUnansweredIfFinished(id, a, r);
+        },
         error: () => this.error.set('No se pudieron cargar los resultados.'),
       });
     });
+  }
+
+  private fillUnansweredIfFinished(assessmentId: string, assessment: Assessment, results: AssessmentResults) {
+    const finished = !!this.attempts.get(assessmentId)?.finishedAt;
+    const questions = assessment.questions ?? [];
+    const answered = new Set(results.submissions.map(s => s.questionId));
+    if (!finished || answered.size >= questions.length) return;
+
+    this.grading.set(true);
+    this.autoGrade
+      .submitUnanswered(assessmentId, questions, answered)
+      .pipe(switchMap(() => this.api.results(assessmentId)))
+      .subscribe({
+        next: r => { this.results.set(r); this.grading.set(false); },
+        error: () => this.grading.set(false),
+      });
   }
 }

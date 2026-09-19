@@ -66,15 +66,23 @@ export class CodeEditor {
   protected isVisible(testCaseId: string) { return this.visibleIds().has(testCaseId); }
   protected passed = computed(() => this.submission()?.results.filter(r => r.passed).length ?? 0);
 
+  private autoSubmitted = false;
+
   constructor() {
     effect(() => {
-      if (this.expired()) this.attempts.finish(this.assessmentId(), this.durationMinutes());
+      if (!this.expired()) return;
+      this.attempts.finish(this.assessmentId(), this.durationMinutes());
+      if (!this.autoSubmitted && !this.submission() && !this.submitting()) {
+        this.autoSubmitted = true;
+        this.submit();
+      }
     });
     effect(() => {
       const id = this.questionId();
       this.drafts.clear();
       this.runResult.set(null);
       this.submission.set(null);
+      this.autoSubmitted = false;
       this.questionsApi.get(id).subscribe({
         next: q => {
           this.question.set(q);

@@ -2,6 +2,7 @@
   <a [routerLink]="['/assessments', id()]">← Assessment</a>
   <h1>Resultados{{ assessment() ? ' · ' + assessment()!.name : '' }}</h1>
   @if (error()) { <p class="error">{{ error() }}</p> }
+  @if (grading()) { <p class="muted">Registrando preguntas sin responder…</p> }
   @if (results(); as r) {
   <div class="grid stats">
     <div class="card stat"><small class="muted">Puntaje obtenido</small><strong>{{ r.totalScore | number: '1.0-2' }} / {{ maxScore()

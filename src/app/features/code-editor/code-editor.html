@@ -32,7 +32,7 @@
           @for (l of q.allowedLanguages; track l) { <option [value]="l">{{ labels[l] }}</option> }
         </select>
         <span class="spacer"></span>
-        <button class="btn" (click)="run()" [disabled]="busy() || expired()">{{ running() ? 'Ejecutando…' : '▶ Ejecutar'
+        <button class="btn" (click)="run()" [disabled]="busy() || expired()">{{ running() ? 'Ejecutando…' : 'Ejecutar'
           }}</button>
         <button class="btn primary" (click)="submit()" [disabled]="busy() || expired()">{{ submitting() ? 'Calificando…'
           : 'Enviar respuesta' }}</button>
@@ -100,8 +100,8 @@ obtenido: {{ r.actualOutput }}</pre>
 
 @if (expired()) {
 <app-modal title="Se terminó el tiempo">
-  <p>El tiempo del assessment ha finalizado y ya no se pueden enviar más respuestas. Lo que enviaste antes quedó
-    calificado.</p>
+  <p>El tiempo del assessment ha finalizado. Tu código en esta pregunta se envió automáticamente para que quede
+    registrado, junto con lo que ya habías enviado antes.</p>
   <ng-container actions>
     <button class="btn primary" (click)="goToResults()">Ver mis resultados</button>
   </ng-container>
