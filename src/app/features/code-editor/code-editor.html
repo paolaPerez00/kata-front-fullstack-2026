@@ -55,7 +55,7 @@
         @if (r.compilation.message) {
         <pre class="error">{{ r.compilation.message }}</pre> }
         }
-        @if (r.timedOut) { <p class="error">⏱ Tiempo de ejecución excedido</p> }
+        @if (r.timedOut) { <p class="error">Tiempo de ejecución excedido</p> }
         @if (r.stdout) { <small class="muted">Salida</small>
         <pre>{{ r.stdout }}</pre> }
         @if (r.stderr) { <small class="muted">stderr</small>
