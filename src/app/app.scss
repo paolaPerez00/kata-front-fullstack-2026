@@ -1,10 +1,62 @@
 .topbar {
-    background: #1c2333;
-    padding: .9rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 0 1.5rem;
+    height: 64px;
+    background: linear-gradient(90deg, #1c2333 0%, #312e81 100%);
+    border-bottom: 3px solid var(--brand);
+    box-shadow: 0 4px 14px rgb(15 23 42 / .25);
 }
 
 .brand {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
     color: #fff;
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.25rem;
+    letter-spacing: .2px;
+
+    strong { color: #a5b4fc; }
+}
+
+.logo {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgb(255 255 255 / .12);
+    font-size: 1.2rem;
+}
+
+nav {
+    display: flex;
+    gap: .35rem;
+    height: 100%;
+    align-items: center;
+
+    a {
+        color: #e2e8f0;
+        padding: .5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background .15s, color .15s;
+
+        &:hover { background: rgb(255 255 255 / .1); }
+
+        &.active {
+            background: var(--brand);
+            color: #fff;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (max-width: 520px) {
+    .topbar { gap: .75rem; padding: 0 .75rem; }
+    .brand span:last-child { display: none; }
 }

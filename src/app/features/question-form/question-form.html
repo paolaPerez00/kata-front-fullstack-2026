@@ -1,0 +1,47 @@
+<main class="container narrow">
+  <app-page-header title="Nueva pregunta" subtitle="Registra un ejercicio de programación." backLink="/questions"
+    backLabel="Preguntas" />
+
+  <form class="card form" (ngSubmit)="save()" novalidate>
+    <app-form-field label="Título" for="title" [required]="true" [error]="submitted() ? errors().title : ''">
+      <input id="title" name="title" [ngModel]="title()" (ngModelChange)="title.set($event)"
+        placeholder="Máximo de un arreglo" />
+    </app-form-field>
+
+    <app-form-field label="Descripción" for="description" [required]="true"
+      [error]="submitted() ? errors().description : ''">
+      <textarea id="description" name="description" rows="4" [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+        placeholder="Dado un arreglo de números, retorne el valor máximo."></textarea>
+    </app-form-field>
+
+    <app-form-field label="Lenguajes permitidos" [required]="true" [error]="submitted() ? errors().languages : ''">
+      <div class="row">
+        @for (l of languages; track l[0]) {
+        <label class="check">
+          <input type="checkbox" [checked]="allowedLanguages().includes(l[0])" (change)="toggleLanguage(l[0])" /> {{
+          l[1] }}
+        </label>
+        }
+      </div>
+    </app-form-field>
+
+    <app-form-field label="Puntaje" for="points" [required]="true" [error]="submitted() ? errors().points : ''">
+      <input id="points" name="points" type="number" min="1" [ngModel]="points()" (ngModelChange)="points.set($event)" />
+    </app-form-field>
+
+    <app-form-field label="Casos de prueba" hint="Los casos ocultos se ejecutan al enviar, pero no se muestran al candidato."
+      [required]="true" [error]="submitted() ? errors().testCases : ''">
+      <app-test-cases-editor [(value)]="testCases" />
+    </app-form-field>
+
+    @if (!valid()) { <p class="muted">Completa los campos obligatorios (*) para habilitar el guardado.</p> }
+    @if (error()) { <p class="error">{{ error() }}</p> }
+    <div class="row">
+      <span class="spacer"></span>
+      <button type="button" class="btn" (click)="router.navigate(['/questions'])">Cancelar</button>
+      <button type="submit" class="btn primary" [disabled]="saving() || !valid()">{{ saving() ? 'Guardando…' : 'Guardar pregunta'
+        }}</button>
+    </div>
+  </form>
+</main>

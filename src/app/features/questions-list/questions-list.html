@@ -1,0 +1,27 @@
+<main class="container">
+  <app-page-header title="Preguntas" subtitle="Ejercicios de programación disponibles para los assessments.">
+    <a actions class="btn primary" routerLink="/questions/new">+ Nueva pregunta</a>
+  </app-page-header>
+
+  @if (questions(); as list) {
+  @if (failed) {
+  <p class="error">No se pudo conectar con el backend. Verifica que esté corriendo en el puerto 3000.</p>
+  } @else if (!list.length) {
+  <p class="muted">Aún no hay preguntas. Crea la primera.</p>
+  }
+  <div class="grid">
+    @for (q of list; track q.id) {
+    <div class="card">
+      <h3>{{ q.title }}</h3>
+      <p class="muted">{{ q.description }}</p>
+      <div class="row">
+        <span class="badge">{{ q.points }} pts</span>
+        @for (l of q.allowedLanguages; track l) { <span class="badge">{{ labels[l] }}</span> }
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <p class="muted">Cargando…</p>
+  }
+</main>

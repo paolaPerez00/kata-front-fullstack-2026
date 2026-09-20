@@ -7,6 +7,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/assessments-list/assessments-list').then(m => m.AssessmentsList),
     },
     {
+        path: 'assessments/new',
+        loadComponent: () => import('./features/assessment-form/assessment-form').then(m => m.AssessmentForm),
+    },
+    {
+        path: 'questions',
+        loadComponent: () => import('./features/questions-list/questions-list').then(m => m.QuestionsList),
+    },
+    {
+        path: 'questions/new',
+        loadComponent: () => import('./features/question-form/question-form').then(m => m.QuestionForm),
+    },
+    {
         path: 'assessments/:id',
         loadComponent: () => import('./features/assessment-detail/assessment-detail').then(m => m.AssessmentDetail),
     },

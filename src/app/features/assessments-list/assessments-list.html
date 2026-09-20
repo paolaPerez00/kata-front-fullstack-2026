@@ -1,6 +1,11 @@
 <main class="container">
-  <h1>Assessments</h1>
-  <p class="muted">Selecciona una prueba técnica para comenzar.</p>
+  <app-page-header title="Assessments" subtitle="Selecciona una prueba técnica para comenzar.">
+    <button actions class="btn" (click)="openDemo()" [disabled]="creatingDemo()">{{ creatingDemo() ? 'Preparando…' :
+      'Probar demo' }}</button>
+    <a actions class="btn primary" routerLink="/assessments/new">+ Nuevo assessment</a>
+  </app-page-header>
+
+  @if (demoError()) { <p class="error">{{ demoError() }}</p> }
 
   @if (assessments(); as list) {
   @if (failed) {

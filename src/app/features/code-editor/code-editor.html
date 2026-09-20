@@ -6,6 +6,12 @@
     <span class="spacer"></span>
     <span class="badge" [class.bad]="expired()">⏱ {{ clock() }}</span>
   </div>
+  @if (isDemo()) {
+  <div class="banner info"><strong>Recuerda:</strong> si crees que tu respuesta es la esperada, pulsa
+    <strong>Enviar respuesta</strong> para calificarla. Si no la envías, no se califica y la pregunta queda como si no
+    la hubieras resuelto.
+  </div>
+  }
   @if (error()) { <p class="error">{{ error() }}</p> }
 
   @if (question(); as q) {
@@ -46,7 +52,7 @@
 
       <div class="card console">
         <h3>Consola</h3>
-        @if (running() || submitting()) { <p class="muted">Procesando…</p> }
+        @if (busy()) { <p class="muted">Procesando…</p> }
         @if (runResult(); as r) {
         @if (r.compilation.success) { <p class="ok">✔ Compilación exitosa <small class="muted">(el código se ejecutó sin
             errores)</small></p> }

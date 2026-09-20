@@ -13,6 +13,7 @@ import { Submission } from '../../core/models/submission.model';
 import { MonacoEditor } from '../../shared/monaco-editor';
 import { Modal } from '../../shared/modal';
 import { ExamGuard } from '../../shared/exam-guard';
+import { DEMO_NAME } from '../../core/demo-assessment';
 import { LANGUAGE_LABELS, buildTemplate, formatClock } from '../../shared/format';
 
 @Component({
@@ -43,6 +44,7 @@ export class CodeEditor {
   protected submission = signal<Submission | null>(null);
   protected error = signal('');
   private durationMinutes = signal(0);
+  protected isDemo = signal(false);
   /** Ids de las preguntas del assessment, en el mismo orden que se muestran en el detalle. */
   private questionOrder = signal<string[]>([]);
   /** Código sin enviar por lenguaje, para no perderlo al cambiar de lenguaje en la misma pregunta. */
@@ -118,6 +120,7 @@ export class CodeEditor {
     effect(() => {
       this.assessmentsApi.get(this.assessmentId()).subscribe(a => {
         this.durationMinutes.set(a.durationMinutes);
+        this.isDemo.set(a.name === DEMO_NAME);
         this.questionOrder.set((a.questions ?? []).map(q => q.id));
       });
     });
@@ -133,6 +136,7 @@ export class CodeEditor {
   /** Cambia de lenguaje conservando el borrador del actual (si `keepDraft` es true) y recupera o genera el del nuevo. */
   protected selectLanguage(lang: Language, keepDraft = true) {
     if (keepDraft) this.drafts.set(this.language(), this.code());
+    this.clearResults();
     this.language.set(lang);
     this.code.set(this.drafts.get(lang) ?? buildTemplate(lang, this.stdin()));
   }
@@ -145,9 +149,15 @@ export class CodeEditor {
     this.router.navigate(['/assessments', this.assessmentId(), 'results']);
   }
 
-  protected run() {
-    this.running.set(true);
+  /** Los resultados pertenecen al código y lenguaje con que se generaron: se descartan al cambiarlos o volver a correr. */
+  private clearResults() {
     this.runResult.set(null);
+    this.submission.set(null);
+  }
+
+  protected run() {
+    this.clearResults();
+    this.running.set(true);
     this.lastRunInput = this.stdin();
     this.executionApi.run({ code: this.code(), language: this.language(), input: this.stdin() }).subscribe({
       next: result => { this.runResult.set(result); this.running.set(false); },
@@ -156,8 +166,8 @@ export class CodeEditor {
   }
 
   protected submit() {
+    this.clearResults();
     this.submitting.set(true);
-    this.submission.set(null);
     this.submissionsApi.submit({
       assessmentId: this.assessmentId(), questionId: this.questionId(), code: this.code(), language: this.language(),
     }).subscribe({

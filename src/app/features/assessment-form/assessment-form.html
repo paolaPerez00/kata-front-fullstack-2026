@@ -1,0 +1,44 @@
+<main class="container narrow">
+  <app-page-header title="Nuevo assessment" subtitle="Crea una evaluación técnica a partir de las preguntas registradas."
+    backLink="/assessments" backLabel="Assessments" />
+
+  <form class="card form" (ngSubmit)="save()" novalidate>
+    <app-form-field label="Nombre" for="name" [required]="true" [error]="submitted() ? errors().name : ''">
+      <input id="name" name="name" [ngModel]="name()" (ngModelChange)="name.set($event)"
+        placeholder="Assessment Full Stack Cloud" />
+    </app-form-field>
+
+    <app-form-field label="Descripción" for="description" [required]="true"
+      [error]="submitted() ? errors().description : ''">
+      <textarea id="description" name="description" rows="3" [ngModel]="description()"
+        (ngModelChange)="description.set($event)"></textarea>
+    </app-form-field>
+
+    <app-form-field label="Tiempo límite (minutos)" for="duration" [required]="true"
+      [error]="submitted() ? errors().duration : ''">
+      <input id="duration" name="duration" type="number" min="1" [ngModel]="durationMinutes()"
+        (ngModelChange)="durationMinutes.set($event)" />
+    </app-form-field>
+
+    <app-form-field label="Preguntas" hint="¿No está la que necesitas? Regístrala primero en Preguntas."
+      [required]="true" [error]="submitted() ? errors().questions : ''">
+      <app-question-picker [questions]="availableQuestions()" [(selected)]="questionIds" />
+    </app-form-field>
+
+    <div class="row summary">
+      <span class="badge">Cantidad de preguntas: {{ questionCount() }}</span>
+      <span class="badge">Puntaje total: {{ totalPoints() }} pts</span>
+      <span class="badge">⏱ {{ durationMinutes() ?? 0 }} min</span>
+    </div>
+
+    @if (!valid()) { <p class="muted">Completa los campos obligatorios (*) para habilitar el guardado.</p> }
+    @if (error()) { <p class="error">{{ error() }}</p> }
+    <div class="row">
+      <a routerLink="/questions/new" class="btn">+ Nueva pregunta</a>
+      <span class="spacer"></span>
+      <button type="button" class="btn" (click)="router.navigate(['/assessments'])">Cancelar</button>
+      <button type="submit" class="btn primary" [disabled]="saving() || !valid()">{{ saving() ? 'Guardando…' : 'Crear assessment'
+        }}</button>
+    </div>
+  </form>
+</main>

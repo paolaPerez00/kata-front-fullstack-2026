@@ -1,4 +1,10 @@
 <header class="topbar">
-  <a routerLink="/assessments" class="brand">🚀 Kata Assessments</a>
+  <a routerLink="/assessments" class="brand">
+    <span>Kata <strong>Assessments</strong></span>
+  </a>
+  <nav>
+    <a routerLink="/assessments" routerLinkActive="active">Assessments</a>
+    <a routerLink="/questions" routerLinkActive="active">Preguntas</a>
+  </nav>
 </header>
 <router-outlet />
