@@ -67,7 +67,7 @@ export class CodeEditor {
   protected expired = computed(() => this.remaining() === 0);
   protected busy = computed(() => this.running() || this.submitting());
 
-  /** Posición (1-based) de la pregunta actual dentro del assessment, y el total, para "Pregunta 2 de 5". */
+  /** Posición (1-basesd) de la pregunta actual dentro del assessment, y el total, para "Pregunta 2 de 5". */
   protected position = computed(() => {
     const order = this.questionOrder();
     const index = order.indexOf(this.questionId());
@@ -76,7 +76,21 @@ export class CodeEditor {
   protected previousQuestionId = computed(() => this.siblingQuestionId(-1));
   protected nextQuestionId = computed(() => this.siblingQuestionId(1));
 
-  /** Compara la última ejecución con el ejemplo visible cuyo input coincide, para no confundir "compiló" con "es correcta". */
+
+  protected runStatus = computed(() => {
+    const r = this.runResult();
+    if (!r) return null;
+
+    const detail = [...new Set([r.compilation.message, r.stderr].map(m => m?.trim()).filter(Boolean))].join('\n\n');
+    if (r.timedOut) return { kind: 'bad' as const, icon: '⏱', title: 'Tiempo de ejecución excedido', hint: 'Revisa si tu código tiene un ciclo que nunca termina.', detail };
+    if (!r.compilation.success) {
+      const line = r.compilation.line ? ` (línea ${r.compilation.line})` : '';
+      return { kind: 'bad' as const, icon: '✖', title: `Error de compilación${line}`, hint: '', detail };
+    }
+    if (r.exitCode !== 0) return { kind: 'bad' as const, icon: '✖', title: `Error en ejecución (exit code ${r.exitCode})`, hint: '', detail };
+    return { kind: 'ok' as const, icon: '✔', title: 'Ejecución correcta', hint: 'El código se ejecutó sin errores.', detail };
+  });
+
   protected verdict = computed(() => {
     const runResult = this.runResult();
     if (!runResult || !runResult.compilation.success || runResult.timedOut || runResult.exitCode !== 0) return null;

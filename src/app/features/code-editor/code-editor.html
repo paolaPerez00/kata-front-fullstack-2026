@@ -18,7 +18,7 @@
   <div class="layout">
     <section class="card statement">
       <h2>{{ q.title }}</h2>
-      <span class="badge">{{ q.points }} pts</span>
+      <span class="badge points">{{ q.points }} pts</span>
       <p class="desc">{{ q.description }}</p>
       @if (q.testCases?.length) {
       <h3>Ejemplos</h3>
@@ -54,28 +54,33 @@
         <h3>Consola</h3>
         @if (busy()) { <p class="muted">Procesando…</p> }
         @if (runResult(); as r) {
-        @if (r.compilation.success) { <p class="ok">✔ Compilación exitosa <small class="muted">(el código se ejecutó sin
-            errores)</small></p> }
-        @else {
-        <p class="error">✖ Error de compilación</p>
-        @if (r.compilation.line) { <p class="error">Línea {{ r.compilation.line }}:</p> }
-        @if (r.compilation.message) {
-        <pre class="error">{{ r.compilation.message }}</pre> }
+        @if (runStatus(); as st) {
+        <p class="status" [class.ok]="st.kind === 'ok'" [class.error]="st.kind === 'bad'">
+          <span class="icon">{{ st.icon }}</span>{{ st.title }}
+          @if (st.hint) { <small class="muted">{{ st.hint }}</small> }
+        </p>
+        @if (st.detail) {
+        <div class="block">
+          <small class="muted">Detalle</small>
+          <pre class="error">{{ st.detail }}</pre>
+        </div>
         }
-        @if (r.timedOut) { <p class="error">Tiempo de ejecución excedido</p> }
-        @if (r.stdout) { <small class="muted">Salida</small>
-        <pre>{{ r.stdout }}</pre> }
-        @if (r.stderr) { <small class="muted">stderr</small>
-        <pre class="error">{{ r.stderr }}</pre> }
-        <small class="muted">exit code {{ r.exitCode }}</small>
+        }
+        @if (r.stdout) {
+        <div class="block">
+          <small class="muted">Salida</small>
+          <pre>{{ r.stdout }}</pre>
+        </div>
+        }
         @if (verdict(); as v) {
-        @if (v.kind === 'ok') { <p class="ok">✔ La salida coincide con el resultado esperado</p> }
-        @else if (v.kind === 'fail') { <p class="error">✖ La salida NO coincide. Esperado: <strong>{{ v.expected
-            }}</strong></p> }
-        @else { <p class="warn">Con este input no se pueden verificar que todos los cases definidos en la prueba sean
-          correctos. Usa "Enviar respuesta" para
-          calificar con todos los casos.</p> }
+        @if (v.kind === 'ok') { <p class="status ok"><span class="icon">✔</span>La salida coincide con el resultado
+          esperado</p> }
+        @else if (v.kind === 'fail') { <p class="status error"><span class="icon">✖</span>La salida no coincide.
+          Esperado: <strong>{{ v.expected }}</strong></p> }
+        @else { <p class="status warn"><span class="icon">ℹ</span>Con este input no se pueden verificar todos los casos
+          de la pregunta. Usa "Enviar respuesta" para calificar con todos.</p> }
         }
+        <small class="muted foot">exit code {{ r.exitCode }}</small>
         }
         @if (submission(); as s) {
         <hr />

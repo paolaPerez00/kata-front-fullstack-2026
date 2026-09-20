@@ -17,7 +17,7 @@ import { LANGUAGE_LABELS } from './format';
           </div>
         </div>
         <span class="spacer"></span>
-        <span class="badge">{{ q.points }} pts</span>
+        <span class="badge points">{{ q.points }} pts</span>
       </label>
     }`,
   styles: `

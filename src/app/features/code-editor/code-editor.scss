@@ -77,6 +77,43 @@ textarea {
   .warn {
     color: #fbbf24;
   }
+
+  .status {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin: 0 0 .75rem;
+    font-weight: 600;
+
+    .icon {
+      flex-shrink: 0;
+    }
+
+    small {
+      font-weight: 400;
+    }
+  }
+
+  .block {
+    margin-bottom: .75rem;
+
+    pre {
+      margin-top: .2rem;
+      padding: .5rem .7rem;
+      border-radius: 6px;
+      background: rgb(255 255 255 / .04);
+      max-height: 260px;
+      overflow: auto;
+    }
+  }
+
+  .foot {
+    display: block;
+    margin-top: .75rem;
+    padding-top: .5rem;
+    border-top: 1px solid #1e293b;
+    font-size: .8rem;
+  }
 }
 
 .case {

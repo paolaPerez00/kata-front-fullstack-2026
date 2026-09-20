@@ -15,7 +15,7 @@
       <h3>{{ q.title }}</h3>
       <p class="muted">{{ q.description }}</p>
       <div class="row">
-        <span class="badge">{{ q.points }} pts</span>
+        <span class="badge points">{{ q.points }} pts</span>
         @for (l of q.allowedLanguages; track l) { <span class="badge">{{ labels[l] }}</span> }
       </div>
     </div>

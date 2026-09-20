@@ -193,6 +193,26 @@ input[type=checkbox] {
   cursor: pointer;
   gap: .5rem;
 }
-/* Avisos */
-.banner { padding: .75rem 1rem; border-radius: 8px; margin-top: 1rem;
-  &.info { background: #e0e7ff; color: #3730a3; } &.warn { background: #fef3c7; color: #92400e; } }
+
+.banner {
+  padding: .75rem 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+
+  &.info {
+    background: #e0e7ff;
+    color: #3730a3;
+  }
+
+  &.warn {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+.badge.points {
+  padding: 0.2 1rem;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 600;
+}
