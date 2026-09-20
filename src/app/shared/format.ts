@@ -32,23 +32,33 @@ const NOTE: Record<InputKind, string> = {
     text: 'texto',
 };
 
+const NAMES = ['a', 'b', 'c', 'd', 'e'];
+
 export function buildTemplate(language: string, sampleInput = ''): string {
     const kind = detectKind(sampleInput);
     const ejemplo = sampleInput.trim() ? ` (ej: ${sampleInput.trim()})` : '';
     const note = `${NOTE[kind]}${ejemplo}`;
 
+    const tokens = sampleInput.trim().split(/\s+/);
+    const names = kind === 'numbers' && tokens.length <= NAMES.length ? NAMES.slice(0, tokens.length) : null;
+    const allInt = tokens.every(t => /^-?\d+$/.test(t));
+    const vars = names?.map(n => `"${n}"`).join(', ').replace(/, ([^,]*)$/, ' y $1');
+    const intro = names
+        ? `Tus datos de entrada ya están listos en ${vars}: números${ejemplo}`
+        : `Tu dato de entrada ya está listo en "datos": ${note}`;
+
     if (language === 'python') {
         const read = {
             intArray: 'json.loads(sys.stdin.read())',
             int: 'int(sys.stdin.read())',
-            numbers: 'list(map(float, sys.stdin.read().split()))',
+            numbers: `list(map(${allInt ? 'int' : 'float'}, sys.stdin.read().split()))`,
             json: 'json.loads(sys.stdin.read())',
             text: 'sys.stdin.read().strip()',
         }[kind];
         return `import sys, json
 
-# 1) Tu dato de entrada ya está listo en "datos": ${note}
-datos = ${read}
+# 1) ${intro}
+${names ? names.join(', ') : 'datos'} = ${names ? `map(${allInt ? 'int' : 'float'}, sys.stdin.read().split())` : read}
 
 # 2) Escribe tu solución aquí y guarda la respuesta en "resultado"
 resultado = None
@@ -66,7 +76,9 @@ else:
             intArray: `String texto = sc.hasNextLine() ? sc.nextLine().replaceAll("[\\\\[\\\\]\\\\s]", "") : "";
         int[] datos = texto.isEmpty() ? new int[0] : Arrays.stream(texto.split(",")).mapToInt(Integer::parseInt).toArray();`,
             int: `int datos = Integer.parseInt(sc.nextLine().trim());`,
-            numbers: `double[] datos = Arrays.stream(sc.nextLine().trim().split("\\\\s+")).mapToDouble(Double::parseDouble).toArray();`,
+            numbers: names
+                ? names.map(n => `${allInt ? 'int' : 'double'} ${n} = ${allInt ? 'Integer.parseInt' : 'Double.parseDouble'}(sc.next());`).join('\n        ')
+                : `double[] datos = Arrays.stream(sc.nextLine().trim().split("\\\\s+")).mapToDouble(Double::parseDouble).toArray();`,
             json: `String datos = sc.hasNextLine() ? sc.nextLine().trim() : "";`,
             text: `String datos = sc.hasNextLine() ? sc.nextLine().trim() : "";`,
         }[kind];
@@ -76,7 +88,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // 1) Tu dato de entrada ya está listo en "datos": ${note}
+        // 1) ${intro}
         ${body}
 
         // 2) Escribe tu solución aquí y guarda la respuesta en "resultado"
@@ -102,8 +114,8 @@ public class Main {
         text: `${raw}.trim()`,
     }[kind];
     const type = ts ? ': any' : '';
-    return `${ts ? "import * as fs from 'fs';\n\n" : ''}// 1) Tu dato de entrada ya está listo en "datos": ${note}
-const datos${type} = ${read};
+    return `${ts ? "import * as fs from 'fs';\n\n" : ''}// 1) ${intro}
+${names ? `const [${names.join(', ')}]${ts ? ': number[]' : ''}` : `const datos${type}`} = ${read};
 
 // 2) Escribe tu solución aquí y guarda la respuesta en "resultado"
 let resultado${type} = null;

@@ -4,7 +4,7 @@
     <a [routerLink]="['/assessments', assessmentId()]">← Assessment</a>
     @if (position().total) { <span class="muted">Pregunta {{ position().current }} de {{ position().total }}</span> }
     <span class="spacer"></span>
-    <span class="badge" [class.bad]="expired()">⏱ {{ clock() }}</span>
+    <span class="badge" [class.bad]="expired()">{{ clock() }}</span>
   </div>
   @if (isDemo()) {
   <div class="banner info"><strong>Recuerda:</strong> si crees que tu respuesta es la esperada, pulsa
